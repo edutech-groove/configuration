@@ -74,6 +74,8 @@ def cli(db_engine, ignore):
     instances_out_of_sync_with_cluster_parameters = []
     cluster_with_disabled_snapshot_tags = []
     instances_with_disabled_performance_insights = []
+    instances_without_tags = []
+    clusters_without_tags = []
     exit_status = 0
 
     db_instances = get_db_instances()
@@ -88,9 +90,12 @@ def cli(db_engine, ignore):
 
             if instance['PerformanceInsightsEnabled'] == False:
                 instances_with_disabled_performance_insights.append(instance['DBInstanceIdentifier'])
+        print("INSTANCE Obejct: ", instance)
+        print("attributes : ", dir(instance))
 
     for cluster in db_clusters:
-
+        print("Cluster Obejct: ", cluster)
+        print("attributes : ", dir(cluster))
         if cluster['CopyTagsToSnapshot'] == False:
             cluster_with_disabled_snapshot_tags.append(cluster['DBClusterIdentifier'])
 
