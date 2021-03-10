@@ -93,8 +93,8 @@ def cli(db_engine, ignore):
                 instances_with_disabled_performance_insights.append(instance['DBInstanceIdentifier'])
         # print("INSTANCE Obejct: ", instance)
         # print("attributes : ", dir(instance))
-        for r in instance.instances:
-             print("NEW PRITN STMT: ", r)
+        # for r in instance.instances:
+        #      print("NEW PRITN STMT: ", r)
 
     for cluster in db_clusters:
         print("Clusters: ", db_clusters)
