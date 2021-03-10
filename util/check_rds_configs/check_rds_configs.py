@@ -3,6 +3,8 @@ from __future__ import print_function
 import boto3
 import click
 
+missing_tags = []
+tags_key_list = ["deployment", "environment", "cluster"]
 
 def get_db_instances():
 
@@ -62,14 +64,11 @@ def check_slow_query_logs(parameter_group_type, parameter_group_name):
 
     return slow_log_enabled
 
-def has_tag(self, dictionary, tag_key):
-
-    tags = (tag_key.capitalize(), tag_key.lower())
-    if dictionary is not None:
-        dict_with_owner_key = [tag for tag in dictionary if tag["Key"] in tags]
-        if dict_with_owner_key:
-            return dict_with_owner_key[0]['Value']
-    return None
+def check_tags(db, tags):
+    for t in tags:
+            for k in t.keys():
+                if not k in tags_key_list:
+                    missing_tags.append(db)
 
 @click.command()
 @click.option('--db_engine', help='Removed, left for compatibility')
@@ -92,27 +91,20 @@ def cli(db_engine, ignore):
     db_instance_parameter_groups = {}
 
     for instance in db_instances:
-        # print("DB INSTANCES: ", db_instances)
         arn = instance['DBInstanceArn']
         tags = rds.list_tags_for_resource(ResourceName=arn)['TagList']
-        print("TAGS: ", tags)
         db_identifier = instance['DBInstanceIdentifier']
+        check_tags(db_identifier, tags)
         if db_identifier not in ignore_rds and "test" not in db_identifier:
             db_instance_parameter_groups[db_identifier] = {'instance': instance['DBParameterGroups'][0]}
 
             if instance['PerformanceInsightsEnabled'] == False:
                 instances_with_disabled_performance_insights.append(instance['DBInstanceIdentifier'])
-        # print("INSTANCE Obejct: ", instance)
-        # print("attributes : ", dir(instance))
-        # for r in instance.instances:
-        #      print("NEW PRITN STMT: ", r)
 
+    print("missing tag list: ",missing_tags)
     for cluster in db_clusters:
-        # print("Clusters: ", db_clusters)
-        # print("attributes : ", dir(cluster))
-        arn = instance['DBClusterArn']
+        arn = cluster['DBClusterArn']
         tags = rds.list_tags_for_resource(ResourceName=arn)['TagList']
-        print("TAGS: ", tags)
         if cluster['CopyTagsToSnapshot'] == False:
             cluster_with_disabled_snapshot_tags.append(cluster['DBClusterIdentifier'])
 
@@ -154,6 +146,8 @@ def cli(db_engine, ignore):
     print("Sanpshot tags are disabled for Clusters\n{0}".format(cluster_with_disabled_snapshot_tags))
     print()
     print("Performance Insights is disabled for RDS Instances\n{0}".format(instances_with_disabled_performance_insights))
+    print()
+    print("Tags are missing for the RDS Instances/Clusters\n{0}".format(missing_tags))
     exit(exit_status)
 
 if __name__ == '__main__':
