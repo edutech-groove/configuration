@@ -62,6 +62,14 @@ def check_slow_query_logs(parameter_group_type, parameter_group_name):
 
     return slow_log_enabled
 
+def has_tag(self, dictionary, tag_key):
+
+    tags = (tag_key.capitalize(), tag_key.lower())
+    if dictionary is not None:
+        dict_with_owner_key = [tag for tag in dictionary if tag["Key"] in tags]
+        if dict_with_owner_key:
+            return dict_with_owner_key[0]['Value']
+    return None
 
 @click.command()
 @click.option('--db_engine', help='Removed, left for compatibility')
@@ -84,7 +92,10 @@ def cli(db_engine, ignore):
     db_instance_parameter_groups = {}
 
     for instance in db_instances:
-        print("DB INSTANCES: ", db_instances)
+        # print("DB INSTANCES: ", db_instances)
+        arn = instance['DBInstanceArn']
+        tags = rds.list_tags_for_resource(ResourceName=arn)['TagList']
+        print("TAGS: ", tags)
         db_identifier = instance['DBInstanceIdentifier']
         if db_identifier not in ignore_rds and "test" not in db_identifier:
             db_instance_parameter_groups[db_identifier] = {'instance': instance['DBParameterGroups'][0]}
@@ -97,8 +108,11 @@ def cli(db_engine, ignore):
         #      print("NEW PRITN STMT: ", r)
 
     for cluster in db_clusters:
-        print("Clusters: ", db_clusters)
+        # print("Clusters: ", db_clusters)
         # print("attributes : ", dir(cluster))
+        arn = instance['DBClusterArn']
+        tags = rds.list_tags_for_resource(ResourceName=arn)['TagList']
+        print("TAGS: ", tags)
         if cluster['CopyTagsToSnapshot'] == False:
             cluster_with_disabled_snapshot_tags.append(cluster['DBClusterIdentifier'])
 
