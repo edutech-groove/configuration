@@ -84,18 +84,21 @@ def cli(db_engine, ignore):
     db_instance_parameter_groups = {}
 
     for instance in db_instances:
+        print("DB INSTANCES: ", db_instances)
         db_identifier = instance['DBInstanceIdentifier']
         if db_identifier not in ignore_rds and "test" not in db_identifier:
             db_instance_parameter_groups[db_identifier] = {'instance': instance['DBParameterGroups'][0]}
 
             if instance['PerformanceInsightsEnabled'] == False:
                 instances_with_disabled_performance_insights.append(instance['DBInstanceIdentifier'])
-        print("INSTANCE Obejct: ", instance)
-        print("attributes : ", dir(instance))
+        # print("INSTANCE Obejct: ", instance)
+        # print("attributes : ", dir(instance))
+        for r in instance.instances:
+             print("NEW PRITN STMT: ", r)
 
     for cluster in db_clusters:
-        print("Cluster Obejct: ", cluster)
-        print("attributes : ", dir(cluster))
+        print("Clusters: ", db_clusters)
+        # print("attributes : ", dir(cluster))
         if cluster['CopyTagsToSnapshot'] == False:
             cluster_with_disabled_snapshot_tags.append(cluster['DBClusterIdentifier'])
 
