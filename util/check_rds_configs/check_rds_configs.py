@@ -67,6 +67,7 @@ def check_slow_query_logs(parameter_group_type, parameter_group_name):
 def check_tags(db, tags):
     for t in tags:
             for k in t.keys():
+                print("this is the key: ", k)
                 if not k in tags_key_list:
                     missing_tags.append(db)
 
